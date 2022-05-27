@@ -8,3 +8,4 @@ Steps
 
 Resources
 https://www.programmersought.com/article/89989054107/
+https://maven.apache.org/guides/getting-started/maven-in-five-minutes.html
