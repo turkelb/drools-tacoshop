@@ -1,0 +1,60 @@
+//created on: 26 May 2022
+package com.mycompany.rules
+
+//list any import classes here.
+import com.mycompany.app.Purchase
+import com.mycompany.app.Coupon
+import com.mycompany.app.Customer
+import com.mycompany.app.IsGoldCustomer
+import com.mycompany.app.IsLowRangeItem
+import com.mycompany.app.Item
+import com.mycompany.app.Order
+
+import java.util.Date;
+
+rule "Classify Customer - Gold"
+    when
+        $c: Customer( category == Customer.Category.GOLD )
+    then
+        insert(new IsGoldCustomer($c));
+end
+
+rule "Classify Item - Low price"
+    when
+        $i: Item(cost < 10.00)
+    then
+        insert(new IsLowRangeItem($i));
+end
+
+rule "Suggest gift"
+    when
+        IsGoldCustomer($c: customer)
+        IsLowRangeItem($i: item)
+    then
+        System.out.println("Suggest giving a gift of item "+$i.getName()+" to customer "+$c.getName());
+end
+
+rule "Categorize Customer - Gold"
+    when
+        $c: Customer( category == Customer.Category.NA )
+        $o: Order(customer == $c, orderLines.size() > 10)
+    then
+        modify($c) { setCategory(Customer.Category.GOLD); }
+end
+
+rule "Expire coupons"
+	enabled false // bturkel
+    when
+        $cp: Coupon( eval(new Date().after($cp.getValidUntil())) )
+    then
+        System.out.println("Coupon expires!");
+        delete($cp);
+end
+
+rule "Execute coupon"
+    when
+        $o: Order()
+        $cp: Coupon(order == $o) 
+    then
+        System.out.println("We have a coupon for this order!");
+end
